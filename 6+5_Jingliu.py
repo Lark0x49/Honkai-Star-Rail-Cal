@@ -1,0 +1,86 @@
+from Honkai_Star_Rail_Cal.Base_Skill_Hit import Base_Skill_Hit
+from Honkai_Star_Rail_Cal.Buff_Enhance import Buff_Enhance
+from Honkai_Star_Rail_Cal.Vulnerability_Penetration import Vulnerability_Penetration
+from Honkai_Star_Rail_Cal.Def_Buff import Def_Buff
+#繁星8未算
+# 使用示例：
+# 对群：6+5镜流 & 0+1布洛尼亚 & 4+0佩拉 & 1+0符玄，外圈：繁星璀璨的天才，内圈：繁星竞技场，辅助全员龙骨套
+#          全队配速为：佩拉：136 镜流：134 布洛尼亚：133 符玄
+#          角色行迹点满，遗器副词条按照共30有效词条分配（取最大档位，暴击：爆伤：攻击：速度=2:1:0.75:0.75）
+#          优先保证暴击率90%，余下词条先补充至配速再按照爆伤：攻击力=3:1分配
+#          故经计算后镜流面板为：
+#          攻击力1261*(2.28（转魄）+0.432（攻击绳）+0.167（遗器）+0.55（布洛妮娅）)+352（手套）
+#          暴击伤害：50+37.3（行迹）+32（光锥）+75.33(遗器)+64.8（爆伤衣）+52（布洛妮娅）+30（符玄1魂）+74（镜流1 6魂）+30（龙骨）
+#          增伤：38.8（冰伤球）+72（光锥）+20（行迹终结技）+ 66（布洛妮娅）+30(布洛妮娅光锥)
+#          的
+
+
+
+
+##基础倍率区
+ATK = 1261 * (2.28 + 0.432 + 0.167 + 0.55) + 352.0  #攻击力
+CRIT_Rate = 0.9  #暴击率
+CRIT_DMG = 0.5 + 0.373 + 0.32 + 0.753 + 0.648 + 0.52 + 0.3 + 0.74 + 0.3  #暴击伤害
+
+##技能倍率区
+attack_multiplier_Main_R = 3.24  # 主目标终结技倍率
+attack_sequences_Main_R = 1  # 主目标终结技攻击段数
+spread_multiplier_Obj_R = 1.62   # 副目标终结技攻击倍率
+attack_sequences_Obj_R = 1  # 副目标终结技攻击段数
+targets_hit_Main_R = 2  # 副目标终结技数量
+
+attack_multiplier_Main_E = 0  # 主目标战技倍率
+attack_sequences_Main_E = 0  # 主目标战攻击段数
+spread_multiplier_Obj_E = 0  # 副目标战攻击倍率
+attack_sequences_Obj_E = 0  # 副目标战攻击段数
+targets_hit_Main_E = 0  # 副目标战数量
+
+attack_multiplier_Main_Q = 0  # 主目标普通攻击倍率
+attack_sequences_Main_Q = 0  # 主目标普通攻击段数
+spread_multiplier_Obj_Q = 0   # 副目标普通攻击倍率
+attack_sequences_Obj_Q = 0  # 副目标普通攻击段数
+targets_hit_Main_Q = 0  # 副目标普通攻击数量
+
+##增伤区
+Feature_Enhance = 0.388   #属性增伤
+IncreaseDMG = 0.66 + 0.3  #其他增伤
+
+##易伤减抗区
+weak = 0  #无对应属性弱点导致怪物有20%属性抗性
+elemental_penetration = 0  #属性穿透
+elemental_vulnerability = 0  #易伤
+
+##防御效果区
+ATK_Level = 80  # 攻击者等级
+Enemy_Level = 90  # 怪物等级
+Q_DEF_broken = False  # 是否击破韧性条
+Dec_DEF = 0.2 + 0.4 + 0.2 + 0.2  #减防效果
+
+
+# 创建 BaseHIT 实例并计算期望伤害
+base_skill_hit = Base_Skill_Hit(ATK, CRIT_Rate, CRIT_DMG,
+                 attack_multiplier_Main_R, attack_sequences_Main_R,
+                 spread_multiplier_Obj_R, attack_sequences_Obj_R, targets_hit_Main_R,
+                 attack_multiplier_Main_E, attack_sequences_Main_E,
+                 spread_multiplier_Obj_E, attack_sequences_Obj_E, targets_hit_Main_E,
+                 attack_multiplier_Main_Q, attack_sequences_Main_Q,
+                 spread_multiplier_Obj_Q, attack_sequences_Obj_Q, targets_hit_Main_Q)
+
+# 计算期望伤害
+expected_base_damage = base_skill_hit.calculate_expected_damage()
+
+# 创建 Buff_Enhance 实例并计算总加成效果
+buff_enhance = Buff_Enhance(Feature_Enhance, IncreaseDMG)
+total_buff_enhance = buff_enhance.calculate_total_enhance()
+
+# 创建 Vulnerability_Penetration 实例并计算总加成效果
+vulnerability_penetration = Vulnerability_Penetration(weak, elemental_penetration, elemental_vulnerability)
+total_vulnerability_penetration = vulnerability_penetration.calculate_penetration_vulnerability()
+
+# 创建 Def_Buff 实例并计算防御效果
+def_buff = Def_Buff(Q_DEF_broken = Q_DEF_broken, ATK_Level=ATK_Level, Enemy_Level=Enemy_Level, Dec_DEF=Dec_DEF)
+total_defense_effect = def_buff.calculate_total_defense_effect()
+
+# 计算最终期望伤害
+final_expected_damage = expected_base_damage * total_buff_enhance * total_vulnerability_penetration * total_defense_effect
+print(f"最终期望伤害: {final_expected_damage}")
